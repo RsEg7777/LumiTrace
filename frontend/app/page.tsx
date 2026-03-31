@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Zap, Image as ImageIcon, Film, Github, Cpu } from 'lucide-react';
-import Uploader from './components/Uploader';
-import Preview from './components/Preview';
-import Controls from './components/Controls';
-import Progress from './components/Progress';
+import Uploader from '../components/Uploader';
+import Preview from '../components/Preview';
+import Controls from '../components/Controls';
+import Progress from '../components/Progress';
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
