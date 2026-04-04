@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 import { Download, Maximize2, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
 
 interface PreviewProps {
   original: string | null;
@@ -19,13 +20,13 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="glass rounded-2xl p-12 flex flex-col items-center justify-center min-h-[400px] text-center"
+        className="rounded-2xl border border-slate-200 bg-white/90 p-12 flex flex-col items-center justify-center min-h-[420px] text-center shadow-sm"
       >
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center mb-6">
-          <ImageIcon className="w-12 h-12 text-gray-600" />
+        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-cyan-100 to-amber-100 flex items-center justify-center mb-6">
+          <ImageIcon className="w-12 h-12 text-slate-500" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-400 mb-2">No Preview Available</h3>
-        <p className="text-gray-500">Upload an image or video to get started</p>
+        <h3 className="text-xl font-semibold text-slate-700 mb-2">No Preview Available</h3>
+        <p className="text-slate-500">Upload an image or video to get started</p>
       </motion.div>
     );
   }
@@ -34,16 +35,16 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass rounded-2xl overflow-hidden"
+      className="rounded-2xl overflow-hidden border border-slate-200 bg-white/95 shadow-sm"
     >
-      <div className="p-4 border-b border-white/10 flex items-center justify-between">
-        <h3 className="font-semibold">Preview</h3>
+      <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+        <h3 className="font-semibold text-slate-900">Preview</h3>
         <div className="flex items-center gap-2">
           {processed && (
             <a
               href={processed}
               download
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition-colors text-sm"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-colors text-sm"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
@@ -51,14 +52,15 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
           )}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            aria-label="Toggle fullscreen preview"
           >
             <Maximize2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className={`relative bg-black/50 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+      <div className={`relative bg-slate-900/90 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
         <AnimatePresence mode="wait">
           {processed ? (
             <motion.div
@@ -88,10 +90,10 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
               />
               
               {/* Labels */}
-              <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/50 text-xs font-medium">
+              <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-slate-900/70 text-xs font-medium text-white">
                 Original
               </div>
-              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-indigo-500/50 text-xs font-medium">
+              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-cyan-500/60 text-xs font-medium text-white">
                 Path Traced
               </div>
             </motion.div>
@@ -104,18 +106,20 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
               className="relative flex items-center justify-center"
               style={{ height: isFullscreen ? '100vh' : '500px' }}
             >
-              <img
+              <Image
                 src={original}
                 alt="Original"
-                className="max-w-full max-h-full object-contain"
+                fill
+                className="object-contain"
+                unoptimized
               />
               
               {isProcessing && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full processing-ring mx-auto mb-4" />
-                    <p className="text-lg font-medium">Processing...</p>
-                    <p className="text-sm text-gray-400">This may take a few moments</p>
+                    <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full processing-ring mx-auto mb-4" />
+                    <p className="text-lg font-medium text-white">Processing...</p>
+                    <p className="text-sm text-slate-300">This may take a few moments</p>
                   </div>
                 </div>
               )}
@@ -126,7 +130,8 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
         {isFullscreen && (
           <button
             onClick={() => setIsFullscreen(false)}
-            className="absolute top-4 right-4 p-2 rounded-lg bg-black/50 hover:bg-black/70 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-lg bg-slate-900/70 text-white hover:bg-slate-900 transition-colors"
+            aria-label="Exit fullscreen preview"
           >
             <Maximize2 className="w-5 h-5" />
           </button>

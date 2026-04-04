@@ -1,63 +1,80 @@
-# 🌟 LumiTrace
+# LumiTrace
 
-AI-Powered Path Tracing as a Service. Transform your images and videos with physically accurate lighting, global illumination, and cinematic quality rendering.
+LumiTrace is an AI-powered path tracing platform for image and video enhancement with a modern Next.js frontend and a FastAPI backend optimized for GPU rendering workflows.
 
-![LumiTrace Banner](https://img.shields.io/badge/RTX-5070-76B900?style=for-the-badge\&logo=nvidia\&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge\&logo=fastapi)
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge\&logo=next.js\&logoColor=white)
+## What Is New In This Implementation Wave
 
----
+- Account system with JWT auth (`/auth/register`, `/auth/login`, `/auth/me`)
+- Persistent job storage in database (`users`, `jobs` tables)
+- Durable queue worker with lease heartbeats, bounded retries, and restart recovery
+- Optional standalone worker process mode for API/worker separation
+- Request observability middleware with request IDs and slow-request logging
+- Runtime metrics endpoint (`/metrics`) for HTTP, queue, and maintenance counters
+- Automated retention cleanup loop for expired completed/failed jobs and artifacts
+- Job ownership enforcement for status/download access
+- Real-time progress transport via WebSocket (`/ws/jobs/{job_id}`) with polling fallback
+- Hardened processing parameter validation and file-size checks
+- Frontend redesign with:
+  - quality presets
+  - keyboard shortcuts
+  - local settings persistence
+  - local render history timeline
+  - account-aware cloud job sync
+  - retry-safe processing flow through typed API client
+- Automated tests for backend and frontend
+- CI workflow for lint, typecheck, tests, production build, backend smoke checks, PostgreSQL-backed backend tests, and Redis broker-mode backend tests
 
-## ✨ Features
+## Project Structure
 
-* 🎨 **AI Path Tracing**: Monte Carlo path tracing with global illumination
-* 🧠 **Neural Rendering**: Fast approximation using trained networks
-* 🎥 **Video Support**: Process entire videos with temporal consistency
-* 🔍 **Depth Estimation**: MiDaS/DPT integration for 3D reconstruction
-* 🎛️ **Real-time Controls**: Adjust samples, bounces, exposure
-* ✨ **AI Denoising**: OptiX AI denoiser for clean results
-* 🌐 **Web Interface**: Modern React frontend with live preview
-* ⚡ **GPU Accelerated**: Optimized for NVIDIA RTX 5070
-
----
-
-## 🏗️ Architecture
-
+```text
+backend/
+  app/          # FastAPI app, config, db, models, security
+  api/          # auth and utility routes
+  core/         # path tracing, depth estimation, denoising
+  utils/        # media processing utilities
+  tests/        # backend tests
+frontend/
+  app/          # Next.js app routes, hooks, shared types
+  components/   # UI components
+  lib/          # API client and utilities
+  __tests__/    # frontend tests
+.github/workflows/
+  ci.yml
 ```
-LumiTrace/
-├── backend/
-│   ├── core/
-│   ├── api/
-│   └── utils/
-├── frontend/
-│   ├── app/
-│   └── components/
-└── models/
-```
 
----
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-* NVIDIA GPU with CUDA 12.1+
-* Python 3.10+
-* Node.js 18+
-* Docker (optional)
+- Python 3.10+
+- Node.js 18+
+- NVIDIA GPU for full rendering pipeline (optional for mock/test mode)
 
-### Backend Setup
+### Backend
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
 pip install -r requirements.txt
-
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+alembic -c backend/alembic.ini upgrade head
+uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Frontend Setup
+For SQLite URLs like `sqlite:///./lumitrace.db`, LumiTrace resolves the file path relative to `backend/` so API and worker processes share the same database path in split mode.
+
+Optional split-mode runtime (separate API and worker processes):
+
+```bash
+# API process (no embedded worker)
+RUN_QUEUE_WORKER_IN_API=false RUN_RETENTION_CLEANUP_IN_API=false LOAD_RENDER_MODELS_ON_STARTUP=false WORKER_QUEUE_BACKEND=redis \
+uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000
+
+# Worker process
+WORKER_QUEUE_BACKEND=redis \
+python -m app.worker_service
+```
+
+When `WORKER_QUEUE_BACKEND=redis`, the API enqueues due jobs into `BROKER_QUEUE_NAME` (default `lumitrace:jobs`) and workers consume via Redis blocking pop.
+
+### Frontend
 
 ```bash
 cd frontend
@@ -65,47 +82,63 @@ npm install
 npm run dev
 ```
 
-### Environment Variables
+Set environment in `frontend/.env.local`:
 
-```
+```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google-oauth-client-id> # optional, required only for Google sign-in UI
 ```
 
----
+## Testing
 
-## 🎯 Usage
-
-1. Upload image/video
-2. Configure settings
-3. Start rendering
-4. Download result
-
----
-
-## 🔧 API Endpoints
-
-### Process Image
+### Backend
 
 ```bash
-curl -X POST "http://localhost:8000/process/image" \
-  -F "file=@image.jpg" \
-  -F "samples=128" \
-  -F "max_bounces=8"
+alembic -c backend/alembic.ini upgrade head
+pytest backend/tests -c backend/pytest.ini -v
 ```
 
-### Status
+For PostgreSQL environments, set `DATABASE_URL` (for example `postgresql+psycopg2://user:pass@host:5432/dbname`) before running migrations and tests.
+
+### Frontend
 
 ```bash
-curl "http://localhost:8000/status/{job_id}"
+cd frontend
+npm run lint
+npm run typecheck
+npm test
 ```
 
----
+## Core API Endpoints
 
-## 🧪 Development
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/google`
+- `GET /auth/me`
+- `POST /process/image`
+- `POST /process/video`
+- `GET /status/{job_id}`
+- `GET /download/{job_id}`
+- `GET /jobs`
+- `DELETE /jobs/{job_id}`
+- `GET /metrics`
+
+## Deployment
+
+See `docs/DEPLOYMENT.md` for the production deployment flow and rollout checklist.
+
+For a full local production-like stack (API + worker + Redis + PostgreSQL), use:
 
 ```bash
-cd backend
-python train.py --epochs 100
+docker compose -f docker-compose.stack.yml up --build
 ```
 
----
+The compose stack defaults to `SKIP_MODEL_LOAD=true` for deterministic smoke runs on non-GPU hosts. Set it to `false` in `docker-compose.stack.yml` for full GPU model runtime.
+
+Automated stack validation (health + metrics + mode checks + authenticated end-to-end render smoke):
+
+```powershell
+pwsh ./scripts/verify-stack.ps1
+```
+
+CI alternative when local Docker is unavailable: run `.github/workflows/stack-smoke.yml` via manual workflow dispatch.

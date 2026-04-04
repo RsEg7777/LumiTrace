@@ -1,0 +1,223 @@
+name: LumiTrace CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  frontend-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Lint frontend
+        run: npm run lint
+      - name: Typecheck frontend
+        run: npm run typecheck
+      - name: Test frontend
+        run: npm test
+      - name: Build frontend
+        run: npm run build
+
+  backend-tests:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite:///./test_lumitrace.db
+      SKIP_MODEL_LOAD: 'true'
+      JWT_SECRET_KEY: ci-test-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run database migrations
+        run: alembic -c backend/alembic.ini upgrade head
+      - name: Run backend tests
+        run: pytest backend/tests -c backend/pytest.ini -v
+      - name: Start backend for smoke checks
+        run: |
+          uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 > backend-smoke.log 2>&1 &
+          echo $! > backend-smoke.pid
+      - name: Run backend smoke checks
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          import urllib.request
+
+          base = "http://127.0.0.1:8000"
+
+          health_payload = None
+          for _ in range(30):
+            try:
+              with urllib.request.urlopen(f"{base}/health", timeout=2) as response:
+                health_payload = json.load(response)
+              break
+            except Exception:
+              time.sleep(1)
+
+          if health_payload is None:
+            raise SystemExit("Backend did not become healthy in time")
+
+          if not health_payload.get("database"):
+            raise SystemExit(f"Unexpected health payload: {health_payload}")
+          if not health_payload.get("worker_running"):
+            raise SystemExit(f"Worker was not running: {health_payload}")
+
+          with urllib.request.urlopen(f"{base}/queue/status", timeout=2) as response:
+            queue_payload = json.load(response)
+
+          for field in ("queued_jobs", "active_jobs", "completed_jobs", "failed_jobs"):
+            if not isinstance(queue_payload.get(field), int):
+              raise SystemExit(f"Invalid queue payload: {queue_payload}")
+
+          with urllib.request.urlopen(f"{base}/models", timeout=2) as response:
+            model_payload = json.load(response)
+
+          if "depth_models" not in model_payload:
+            raise SystemExit(f"Invalid models payload: {model_payload}")
+
+          with urllib.request.urlopen(f"{base}/metrics", timeout=2) as response:
+            metrics_payload = json.load(response)
+
+          for field in ("http", "jobs", "broker", "maintenance", "queue"):
+            if field not in metrics_payload:
+              raise SystemExit(f"Invalid metrics payload: {metrics_payload}")
+
+          print("Backend smoke checks passed")
+          PY
+      - name: Stop backend smoke service
+        if: always()
+        run: |
+          if [ -f backend-smoke.pid ]; then
+            kill "$(cat backend-smoke.pid)" || true
+          fi
+          if [ -f backend-smoke.log ]; then
+            tail -n 200 backend-smoke.log || true
+          fi
+
+  backend-tests-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: lumitrace_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lumitrace_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@127.0.0.1:5432/lumitrace_test
+      SKIP_MODEL_LOAD: 'true'
+      JWT_SECRET_KEY: ci-test-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Wait for PostgreSQL
+        run: |
+          python - <<'PY'
+          import os
+          import time
+          from sqlalchemy import create_engine, text
+
+          url = os.environ["DATABASE_URL"]
+          last_error = None
+          for _ in range(30):
+            try:
+              engine = create_engine(url)
+              with engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+              print("PostgreSQL is ready")
+              break
+            except Exception as exc:
+              last_error = exc
+              time.sleep(1)
+          else:
+            raise SystemExit(f"PostgreSQL did not become ready: {last_error}")
+          PY
+      - name: Run database migrations
+        run: alembic -c backend/alembic.ini upgrade head
+      - name: Run backend tests
+        run: pytest backend/tests -c backend/pytest.ini -v
+
+  backend-tests-redis-broker:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: sqlite:///./test_lumitrace_redis.db
+      REDIS_URL: redis://127.0.0.1:6379
+      WORKER_QUEUE_BACKEND: redis
+      SKIP_MODEL_LOAD: 'true'
+      JWT_SECRET_KEY: ci-test-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Wait for Redis
+        run: |
+          python - <<'PY'
+          import os
+          import time
+          from redis import Redis
+
+          url = os.environ["REDIS_URL"]
+          client = Redis.from_url(url)
+
+          for _ in range(30):
+            try:
+              if client.ping():
+                print("Redis is ready")
+                break
+            except Exception:
+              time.sleep(1)
+          else:
+            raise SystemExit("Redis did not become ready")
+          PY
+      - name: Run database migrations
+        run: alembic -c backend/alembic.ini upgrade head
+      - name: Run backend tests in Redis queue mode
+        run: pytest backend/tests -c backend/pytest.ini -v

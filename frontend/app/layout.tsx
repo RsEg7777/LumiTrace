@@ -1,12 +1,22 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Space_Grotesk, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  weight: ['400', '500', '600', '700'],
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['400', '500'],
+});
 
 export const metadata: Metadata = {
-  title: 'LumiTrace - AI Path Tracing',
-  description: 'Transform your images and videos with AI-powered path tracing',
+  title: 'LumiTrace Studio - AI Path Tracing Platform',
+  description: 'Transform image and video lighting with AI-assisted path tracing, account-backed history, and production controls.',
 };
 
 export default function RootLayout({
@@ -16,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${spaceGrotesk.variable} ${plexMono.variable}`}>{children}</body>
     </html>
   );
 }

@@ -1,194 +1,167 @@
 # Deployment Guide
 
-## Local Development
+## Target Topology
+
+- Frontend: Vercel (`frontend/`)
+- Backend: single GPU VM container (`backend/`)
+- Database: SQLite for single-node deployment (`lumitrace.db` on VM disk) or PostgreSQL for scalable deployments
+
+## 1. Local Validation Before Deploy
 
 ### Backend
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+alembic -c backend/alembic.ini upgrade head
+pytest backend/tests -c backend/pytest.ini -v
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
-npm install
-npm run dev
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
 ```
 
-## Production Deployment
+## 2. Backend Container Deployment
 
-### Option 1: Vercel + Cloud GPU
-
-#### Frontend (Vercel)
-
-1. Push to GitHub
-2. Connect repository to Vercel
-3. Set environment variables:
-
-```
-NEXT_PUBLIC_API_URL=https://your-backend.com
-```
-
-4. Deploy
-
-#### Backend (Cloud GPU)
-
-**AWS EC2 (g5.xlarge)**:
+Build and run:
 
 ```bash
-sudo apt update
-sudo apt install -y nvidia-driver-535 nvidia-docker2
-
+cd backend
+docker build -t lumitrace-backend .
 docker run --gpus all -d \
   -p 8000:8000 \
-  -e CUDA_VISIBLE_DEVICES=0 \
+  -e ENVIRONMENT=production \
+  -e DATABASE_URL=sqlite:///./lumitrace.db \
+  -e JWT_SECRET_KEY=<strong-secret> \
+  -e ALLOW_ANONYMOUS_JOBS=false \
+  -v $(pwd)/outputs:/app/outputs \
+  -v $(pwd)/temp:/app/temp \
+  -v $(pwd)/data:/app \
   lumitrace-backend
 ```
 
-**Google Cloud Platform**:
+The backend container startup now applies schema upgrades automatically with `alembic upgrade head` before `uvicorn`.
+
+When using SQLite URLs such as `sqlite:///./lumitrace.db`, LumiTrace resolves the path under `backend/` so split API/worker processes use a shared database location.
+
+For PostgreSQL-backed deployments, set `DATABASE_URL` to a PostgreSQL DSN and keep the same startup flow:
 
 ```bash
-gcloud compute instances create lumitrace-backend \
-  --zone=us-central1-a \
-  --machine-type=n1-standard-4 \
-  --accelerator=type=nvidia-tesla-t4,count=1 \
-  --image-family=pytorch-latest-gpu \
-  --image-project=deeplearning-platform-release
-
-gcloud compute scp --recurse backend/ instance-name:~/
-gcloud compute ssh instance-name --command="docker build -t lumitrace . && docker run -d -p 8000:8000 lumitrace"
+-e DATABASE_URL=postgresql+psycopg2://<user>:<password>@<host>:5432/<db>
 ```
 
-### Option 2: Kubernetes
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: lumitrace-backend
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: lumitrace
-  template:
-    metadata:
-      labels:
-        app: lumitrace
-    spec:
-      containers:
-      - name: backend
-        image: lumitrace-backend:latest
-        resources:
-          limits:
-            nvidia.com/gpu: 1
-        ports:
-        - containerPort: 8000
-```
-
-### Option 3: Serverless (CPU Fallback)
-
-```yaml
-{
-  "functions": {
-    "api/process.py": {
-      "maxDuration": 60
-    }
-  }
-}
-```
-
-## CI/CD Pipeline
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Build Docker
-        run: docker build -t lumitrace-backend ./backend
-      
-      - name: Push to Registry
-        run: |
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker push lumitrace-backend
-      
-      - name: Deploy to Server
-        run: |
-          ssh user@server "docker pull lumitrace-backend && docker restart lumitrace"
-
-  frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: vercel/action-deploy@v1
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-```
-
-## Environment Variables
-
-### Backend
+For split deployments (API and worker as separate containers/processes), disable embedded worker in API and run the standalone worker entrypoint:
 
 ```bash
-REDIS_URL=redis://localhost:6379
-MODEL_PATH=/app/models
-MAX_FILE_SIZE=100MB
-GPU_MEMORY_FRACTION=0.8
-LOG_LEVEL=INFO
+# API container/process
+RUN_QUEUE_WORKER_IN_API=false
+RUN_RETENTION_CLEANUP_IN_API=false
+LOAD_RENDER_MODELS_ON_STARTUP=false
+WORKER_QUEUE_BACKEND=redis
+REDIS_URL=redis://<redis-host>:6379
+
+# Worker container/process command override
+WORKER_QUEUE_BACKEND=redis
+REDIS_URL=redis://<redis-host>:6379
+sh -c "alembic -c alembic.ini upgrade head && python -m app.worker_service"
 ```
 
-### Frontend
+## 3. Frontend Vercel Deployment
+
+Set Vercel environment variable:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_WS_URL=ws://localhost:8000
-NEXT_PUBLIC_MAX_UPLOAD_SIZE=104857600
+NEXT_PUBLIC_API_URL=https://<your-backend-host>
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google-oauth-client-id>
 ```
 
-## Monitoring & Logging
+Push to `main` and let Vercel build/deploy.
 
-```python
-from prometheus_client import start_http_server
-start_http_server(9090)
-```
+## 3b. Full Stack Compose Deployment
 
-```python
-import structlog
-logger = structlog.get_logger()
-logger.info("job_started", job_id=job_id)
-```
-
-## Backup & Recovery
+For a production-like split stack (API + worker + Redis + PostgreSQL):
 
 ```bash
-aws s3 sync models/ s3://lumitrace-backup/models/
-aws s3 sync outputs/ s3://lumitrace-backup/outputs/
+docker compose -f docker-compose.stack.yml up --build
 ```
 
-## Security Checklist
+Stack file location: `docker-compose.stack.yml`
+By default this stack uses `SKIP_MODEL_LOAD=true` to make smoke validation deterministic on non-GPU hosts; set it to `false` for full model runtime on GPU nodes.
 
-* HTTPS enabled
-* API key authentication
-* Rate limiting
-* Input validation
-* Container scanning
-* Secrets management
-* Network policies
-* Regular updates
+Automated verification script (starts stack, validates health/metrics/mode flags, runs an authenticated end-to-end render smoke, and confirms post-render queue/broker counters, then tears down):
 
+```powershell
+pwsh ./scripts/verify-stack.ps1
 ```
+
+If local Docker is unavailable, run the manual GitHub Actions stack smoke workflow:
+
+- Workflow: `.github/workflows/stack-smoke.yml`
+- Trigger: `workflow_dispatch`
+
+## 4. CI Pipeline
+
+CI workflow file: `.github/workflows/ci.yml`
+
+What it enforces:
+
+- Frontend lint
+- Frontend typecheck
+- Frontend tests
+- Frontend production build
+- Backend tests with `SKIP_MODEL_LOAD=true`
+- Database migration upgrade check (`alembic upgrade head`)
+- Backend runtime smoke checks against `/health`, `/queue/status`, and `/models`
+- Backend test matrix coverage on SQLite and PostgreSQL
+- Backend test coverage in Redis broker queue mode (`WORKER_QUEUE_BACKEND=redis`)
+
+## 5. Runtime Health Checks
+
+After deployment run:
+
+```bash
+curl https://<backend-host>/health
+curl https://<backend-host>/models
+curl https://<backend-host>/queue/status
+curl https://<backend-host>/metrics
 ```
+
+Expected:
+
+- `database: true`
+- `models_loaded: true`
+- if `queue_backend=redis`, verify `broker_available: true`
+- if `embedded_worker_enabled=true`, verify `worker_running: true`
+- if `retention_cleanup_enabled=true`, verify `retention_running: true`
+- queue status returns integer counters
+- metrics payload includes `http`, `jobs`, `broker`, `maintenance`, and `queue` sections
+
+## 6. Security and Secrets Checklist
+
+- Set strong `JWT_SECRET_KEY`
+- Set `GOOGLE_CLIENT_ID` when enabling Google sign-in
+- Backend startup now refuses production runtime when `JWT_SECRET_KEY` is still the default `change-me-in-production`
+- Set `ALLOW_ANONYMOUS_JOBS=false` in production for account-only mode
+- Restrict `BACKEND_CORS_ORIGINS` to frontend origin
+- Set retention controls (`JOB_RETENTION_HOURS`, `RETENTION_CLEANUP_INTERVAL_SECONDS`) for storage policy
+- Keep request observability on (`REQUEST_LOGGING_ENABLED=true`) and tune `REQUEST_LOG_SLOW_MS`
+- In split mode, ensure only worker processes run with `RUN_QUEUE_WORKER_IN_API=true`
+- In Redis broker mode, ensure API and worker share the same `REDIS_URL` and `BROKER_QUEUE_NAME`
+- Rotate API secrets regularly
+
+## 7. Rollback Procedure
+
+1. Keep prior Docker image tag on VM.
+2. If smoke checks fail, stop latest container and restart previous tag.
+3. Verify `/health` and one authenticated render flow.
+
+## 8. Recommended Next Ops Enhancements
+
+- Move from SQLite to PostgreSQL for multi-node scale.
+- Add structured logging and metrics export.

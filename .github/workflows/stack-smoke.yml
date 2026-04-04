@@ -1,0 +1,180 @@
+name: LumiTrace Stack Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  stack-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start stack
+        run: docker compose -f docker-compose.stack.yml up -d --build
+      - name: Verify stack health and metrics
+        run: |
+          python - <<'PY'
+          import base64
+          import json
+          import time
+          import uuid
+          import urllib.request
+
+          base = "http://127.0.0.1:8000"
+
+          def request_json(method: str, url: str, payload: dict | None = None, headers: dict | None = None):
+            body = None
+            request_headers = dict(headers or {})
+            if payload is not None:
+              body = json.dumps(payload).encode("utf-8")
+              request_headers["Content-Type"] = "application/json"
+
+            request = urllib.request.Request(url, data=body, method=method, headers=request_headers)
+            with urllib.request.urlopen(request, timeout=5) as response:
+              return json.load(response)
+
+          def multipart_body(fields: dict[str, str], file_field: str, file_name: str, file_bytes: bytes, content_type: str):
+            boundary = f"----lumitrace-{uuid.uuid4().hex}"
+            chunks: list[bytes] = []
+
+            for key, value in fields.items():
+              chunks.extend([
+                f"--{boundary}\r\n".encode("utf-8"),
+                f"Content-Disposition: form-data; name=\"{key}\"\r\n\r\n".encode("utf-8"),
+                f"{value}\r\n".encode("utf-8"),
+              ])
+
+            chunks.extend([
+              f"--{boundary}\r\n".encode("utf-8"),
+              f"Content-Disposition: form-data; name=\"{file_field}\"; filename=\"{file_name}\"\r\n".encode("utf-8"),
+              f"Content-Type: {content_type}\r\n\r\n".encode("utf-8"),
+              file_bytes,
+              b"\r\n",
+              f"--{boundary}--\r\n".encode("utf-8"),
+            ])
+
+            return boundary, b"".join(chunks)
+
+          health_payload = None
+          for _ in range(90):
+            try:
+              with urllib.request.urlopen(f"{base}/health", timeout=3) as response:
+                health_payload = json.load(response)
+              break
+            except Exception:
+              time.sleep(2)
+
+          if health_payload is None:
+            raise SystemExit("Stack backend did not become healthy in time")
+
+          if not health_payload.get("database"):
+            raise SystemExit(f"Unexpected health payload: {health_payload}")
+          if health_payload.get("embedded_worker_enabled") is not False:
+            raise SystemExit(f"Expected API embedded worker disabled: {health_payload}")
+          if health_payload.get("queue_backend") != "redis":
+            raise SystemExit(f"Expected redis queue backend: {health_payload}")
+
+          with urllib.request.urlopen(f"{base}/metrics", timeout=3) as response:
+            metrics_payload = json.load(response)
+
+          for field in ("http", "jobs", "broker", "maintenance", "queue", "worker"):
+            if field not in metrics_payload:
+              raise SystemExit(f"Invalid metrics payload: {metrics_payload}")
+
+          worker_payload = metrics_payload.get("worker", {})
+          if worker_payload.get("queue_backend") != "redis":
+            raise SystemExit(f"Expected metrics worker queue backend=redis: {metrics_payload}")
+
+          register_payload = {
+            "email": "stack-smoke@example.com",
+            "password": "password123",
+            "display_name": "Stack Smoke",
+          }
+          auth_payload = request_json("POST", f"{base}/auth/register", payload=register_payload)
+          token = auth_payload.get("access_token")
+          if not token:
+            raise SystemExit(f"Missing access token in register response: {auth_payload}")
+
+          tiny_png = base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7+0xQAAAAASUVORK5CYII="
+          )
+          boundary, body = multipart_body(
+            fields={
+              "samples": "32",
+              "max_bounces": "2",
+              "use_denoising": "true",
+              "use_neural": "false",
+              "exposure": "1.0",
+            },
+            file_field="file",
+            file_name="smoke.png",
+            file_bytes=tiny_png,
+            content_type="image/png",
+          )
+
+          submit_request = urllib.request.Request(
+            f"{base}/process/image",
+            data=body,
+            method="POST",
+            headers={
+              "Authorization": f"Bearer {token}",
+              "Content-Type": f"multipart/form-data; boundary={boundary}",
+            },
+          )
+          with urllib.request.urlopen(submit_request, timeout=10) as response:
+            submit_payload = json.load(response)
+
+          job_id = submit_payload.get("job_id")
+          if not job_id:
+            raise SystemExit(f"Missing job_id in submit response: {submit_payload}")
+
+          final_status = None
+          for _ in range(120):
+            status_request = urllib.request.Request(
+              f"{base}/status/{job_id}",
+              method="GET",
+              headers={"Authorization": f"Bearer {token}"},
+            )
+            with urllib.request.urlopen(status_request, timeout=5) as response:
+              status_payload = json.load(response)
+
+            if status_payload.get("status") in {"completed", "failed"}:
+              final_status = status_payload
+              break
+            time.sleep(1)
+
+          if final_status is None:
+            raise SystemExit("Timed out waiting for job completion")
+          if final_status.get("status") != "completed":
+            raise SystemExit(f"Job failed: {final_status}")
+
+          download_request = urllib.request.Request(
+            f"{base}/download/{job_id}",
+            method="GET",
+            headers={"Authorization": f"Bearer {token}"},
+          )
+          with urllib.request.urlopen(download_request, timeout=10) as response:
+            output_bytes = response.read()
+
+          if len(output_bytes) < 8:
+            raise SystemExit("Downloaded output is unexpectedly small")
+
+          with urllib.request.urlopen(f"{base}/metrics", timeout=5) as response:
+            post_metrics = json.load(response)
+
+          queue_metrics = post_metrics.get("queue", {})
+          if int(queue_metrics.get("completed_jobs", 0)) < 1:
+            raise SystemExit(f"Expected completed_jobs >= 1 after render: {post_metrics}")
+
+          broker_metrics = post_metrics.get("broker", {})
+          if int(broker_metrics.get("enqueue_added_total", 0)) < 1:
+            raise SystemExit(f"Expected broker enqueue_added_total >= 1 after render: {post_metrics}")
+
+          print("Stack smoke checks passed with end-to-end render")
+          PY
+      - name: Print stack logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.stack.yml logs --no-color
+      - name: Stop stack
+        if: always()
+        run: docker compose -f docker-compose.stack.yml down -v

@@ -39,6 +39,13 @@ frontend/node_modules/
 # Build artifacts and outputs
 dist/
 build/
+outputs/
+*.tsbuildinfo
+lumitrace.db
+backend/lumitrace.db
+test_lumitrace*.db
+backend/test_lumitrace*.db
+*.db-journal
 backend/outputs/
 backend/temp/
 

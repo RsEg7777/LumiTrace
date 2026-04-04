@@ -1,0 +1,90 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lumitrace
+      POSTGRES_PASSWORD: lumitrace
+      POSTGRES_DB: lumitrace
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lumitrace -d lumitrace"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  backend-api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg2://lumitrace:lumitrace@postgres:5432/lumitrace
+      REDIS_URL: redis://redis:6379
+      SKIP_MODEL_LOAD: "true"
+      JWT_SECRET_KEY: change-me-before-production
+      ALLOW_ANONYMOUS_JOBS: "false"
+      RUN_QUEUE_WORKER_IN_API: "false"
+      RUN_RETENTION_CLEANUP_IN_API: "false"
+      LOAD_RENDER_MODELS_ON_STARTUP: "false"
+      WORKER_QUEUE_BACKEND: "redis"
+    command: >-
+      sh -c "alembic -c alembic.ini upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./temp:/app/temp
+
+  backend-worker:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg2://lumitrace:lumitrace@postgres:5432/lumitrace
+      REDIS_URL: redis://redis:6379
+      SKIP_MODEL_LOAD: "true"
+      JWT_SECRET_KEY: change-me-before-production
+      RUN_QUEUE_WORKER_IN_API: "true"
+      RUN_RETENTION_CLEANUP_IN_API: "true"
+      LOAD_RENDER_MODELS_ON_STARTUP: "true"
+      WORKER_QUEUE_BACKEND: "redis"
+      WORKER_MAX_ATTEMPTS: "3"
+      WORKER_LEASE_SECONDS: "180"
+    command: >-
+      sh -c "alembic -c alembic.ini upgrade head &&
+      python -m app.worker_service"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./temp:/app/temp
+
+volumes:
+  postgres_data:
+  redis_data:
