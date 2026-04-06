@@ -1,0 +1,118 @@
+name: LumiTrace Live API Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  live-api-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      LIVE_FRONTEND_URL: ${{ vars.LUMITRACE_FRONTEND_URL || 'https://lumi-trace-five.vercel.app' }}
+    steps:
+      - name: Verify live homepage
+        run: |
+          python - <<'PY'
+          import os
+          import urllib.request
+
+          base = os.environ["LIVE_FRONTEND_URL"].rstrip("/")
+          request = urllib.request.Request(f"{base}/", method="GET")
+          with urllib.request.urlopen(request, timeout=20) as response:
+            status = response.getcode()
+
+          if status != 200:
+            raise SystemExit(f"Expected 200 from {base}/, got {status}")
+
+          print(f"Homepage check passed: {base}/ -> {status}")
+          PY
+
+      - name: Verify login proxy route
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          base = os.environ["LIVE_FRONTEND_URL"].rstrip("/")
+          payload = json.dumps({"email": "smoke-invalid@example.com", "password": "badbadbad"}).encode("utf-8")
+          request = urllib.request.Request(
+              f"{base}/api/auth/login",
+              data=payload,
+              method="POST",
+              headers={"Content-Type": "application/json"},
+          )
+
+          try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+              status = response.getcode()
+              body = response.read().decode("utf-8", errors="replace")
+          except urllib.error.HTTPError as exc:
+            status = exc.code
+            body = exc.read().decode("utf-8", errors="replace")
+
+          if status == 502:
+            raise SystemExit(f"Login route returned 502. Body: {body}")
+
+          if status not in {200, 400, 401, 422}:
+            raise SystemExit(f"Unexpected login status {status}. Body: {body}")
+
+          print(f"Login route check passed: status={status}")
+          PY
+
+      - name: Verify auth/me proxy route
+        run: |
+          python - <<'PY'
+          import os
+          import urllib.error
+          import urllib.request
+
+          base = os.environ["LIVE_FRONTEND_URL"].rstrip("/")
+          request = urllib.request.Request(f"{base}/api/auth/me", method="GET")
+
+          try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+              status = response.getcode()
+              body = response.read().decode("utf-8", errors="replace")
+          except urllib.error.HTTPError as exc:
+            status = exc.code
+            body = exc.read().decode("utf-8", errors="replace")
+
+          if status == 502:
+            raise SystemExit(f"/api/auth/me returned 502. Body: {body}")
+
+          if status not in {200, 401}:
+            raise SystemExit(f"Unexpected /api/auth/me status {status}. Body: {body}")
+
+          print(f"Auth/me route check passed: status={status}")
+          PY
+
+      - name: Verify process route shape
+        run: |
+          python - <<'PY'
+          import os
+          import urllib.error
+          import urllib.request
+
+          base = os.environ["LIVE_FRONTEND_URL"].rstrip("/")
+          request = urllib.request.Request(f"{base}/api/process/image", method="GET")
+
+          try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+              status = response.getcode()
+              body = response.read().decode("utf-8", errors="replace")
+          except urllib.error.HTTPError as exc:
+            status = exc.code
+            body = exc.read().decode("utf-8", errors="replace")
+
+          if status == 502:
+            raise SystemExit(f"/api/process/image returned 502. Body: {body}")
+
+          if status not in {405}:
+            raise SystemExit(f"Unexpected /api/process/image status {status}. Body: {body}")
+
+          print(f"Process route check passed: status={status}")
+          PY
