@@ -28,7 +28,7 @@ async function getForwardBody(request: NextRequest, bodyMode: ProxyBodyMode): Pr
   }
 
   if (bodyMode === 'form-data') {
-    return request.formData();
+    return request.arrayBuffer();
   }
 
   return undefined;
@@ -76,6 +76,13 @@ export async function proxyRequest({
 
   if (bodyMode === 'json') {
     headers.set('content-type', 'application/json');
+  }
+
+  if (bodyMode === 'form-data') {
+    const contentType = request.headers.get('content-type');
+    if (contentType) {
+      headers.set('content-type', contentType);
+    }
   }
 
   try {
