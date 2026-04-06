@@ -5,10 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   Cpu,
   Film,
-  Github,
   Image as ImageIcon,
   Radar,
-  Sparkles,
   Zap,
 } from 'lucide-react';
 
@@ -21,6 +19,7 @@ import Preview from '../components/Preview';
 import Progress from '../components/Progress';
 import Toast from '../components/Toast';
 import Uploader from '../components/Uploader';
+import Navbar from '../components/Navbar';
 import { fetchMe, listJobs } from '@/lib/api';
 
 const SETTINGS_STORAGE_KEY = 'lumitrace.settings.v2';
@@ -239,141 +238,131 @@ export default function Home() {
 
   return (
     <main className="min-h-screen pb-16">
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(99,102,241,0.4)] border border-indigo-400/50">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <p className="font-heading text-lg font-bold tracking-tight text-zinc-50">LumiTrace Studio</p>
-              <p className="text-xs text-zinc-400">{processingSummary}</p>
-            </div>
-          </div>
+      <Navbar
+        user={user}
+        processingSummary={processingSummary}
+        onLogout={() => {
+          setToken(null);
+          setUser(null);
+          setToast({ open: true, message: 'Signed out.', type: 'info' });
+        }}
+      />
 
-          <a
-            href="https://github.com/RsEg7777/LumiTrace"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="chip inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-300 transition-all hover:text-zinc-50 hover:bg-white/5"
+      {!user ? (
+        <section className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-strong relative overflow-hidden rounded-[2rem] px-6 py-12 sm:px-12 mb-12"
           >
-            <Github className="h-4 w-4" />
-            GitHub
-          </a>
-        </div>
-      </header>
+            <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-teal-500/20 blur-[100px]" />
+            <div className="absolute -bottom-20 left-6 h-72 w-72 rounded-full bg-rose-500/20 blur-[100px]" />
 
-      <section className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-strong relative overflow-hidden rounded-[2rem] px-6 py-12 sm:px-12"
-        >
-          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-teal-500/20 blur-[100px]" />
-          <div className="absolute -bottom-20 left-6 h-72 w-72 rounded-full bg-rose-500/20 blur-[100px]" />
+            <div className="relative">
+              <h1 className="hero-title font-heading text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl">
+                Cinematic path tracing <br/>
+                <span className="hero-title-accent">for images and videos</span>
+              </h1>
+              <p className="mt-6 max-w-2xl text-base text-zinc-400 sm:text-lg leading-relaxed">
+                Build physically inspired lighting passes with account-backed job history, reusable presets,
+                robust progress tracking, and resilient download flows. Welcome to LumiTrace Studio.
+              </p>
 
-          <div className="relative">
-            <h1 className="hero-title font-heading text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl">
-              Cinematic path tracing <br/>
-              <span className="hero-title-accent">for images and videos</span>
-            </h1>
-            <p className="mt-6 max-w-2xl text-base text-zinc-400 sm:text-lg leading-relaxed">
-              Build physically inspired lighting passes with account-backed job history, reusable presets,
-              robust progress tracking, and resilient download flows.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              {[
-                { icon: Cpu, text: 'GPU optimized backend' },
-                { icon: Radar, text: 'Persistent job tracking' },
-                { icon: Zap, text: 'Preset-driven controls' },
-                { icon: ImageIcon, text: 'Image rendering' },
-                { icon: Film, text: 'Video rendering' },
-              ].map((feature, index) => (
-                <motion.div
-                  key={feature.text}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="chip inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-teal-300"
-                >
-                  <feature.icon className="h-3.5 w-3.5 text-teal-300" />
-                  {feature.text}
-                </motion.div>
-              ))}
+              <div className="mt-8 flex flex-wrap gap-3">
+                {[
+                  { icon: Cpu, text: 'GPU optimized backend' },
+                  { icon: Radar, text: 'Persistent job tracking' },
+                  { icon: Zap, text: 'Preset-driven controls' },
+                  { icon: ImageIcon, text: 'Image rendering' },
+                  { icon: Film, text: 'Video rendering' },
+                ].map((feature, index) => (
+                  <motion.div
+                    key={feature.text}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="chip inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-teal-300"
+                  >
+                    <feature.icon className="h-3.5 w-3.5 text-teal-300" />
+                    {feature.text}
+                  </motion.div>
+                ))}
+              </div>
             </div>
+          </motion.div>
+
+          {/* Authentication Section for Logged-Out Users */}
+          <div id="login-section" className="mx-auto max-w-md pt-6 pb-24">
+            <h2 className="text-2xl font-bold text-center text-zinc-100 mb-6">Start Tracing Now</h2>
+            <AuthPanel
+              user={user}
+              onAuth={(auth: AuthResponse) => {
+                setToken(auth.access_token);
+                setUser(auth.user);
+                setToast({ open: true, message: 'Signed in successfully.', type: 'success' });
+              }}
+              onLogout={() => {
+                setToken(null);
+                setUser(null);
+                setToast({ open: true, message: 'Signed out.', type: 'info' });
+              }}
+            />
           </div>
-        </motion.div>
-      </section>
+        </section>
+      ) : (
+        <section className="mx-auto mt-8 grid w-full max-w-7xl grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+          <aside className="space-y-6 lg:col-span-3">
+            <HistoryPanel
+              items={historyItems}
+              onClear={() => {
+                setHistoryItems([]);
+                setToast({ open: true, message: 'Local history cleared.', type: 'info' });
+              }}
+            />
 
-      <section className="mx-auto mt-8 grid w-full max-w-7xl grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
-        <aside className="space-y-6 lg:col-span-3">
-          <AuthPanel
-            user={user}
-            onAuth={(auth: AuthResponse) => {
-              setToken(auth.access_token);
-              setUser(auth.user);
-              setToast({ open: true, message: 'Signed in successfully.', type: 'success' });
-            }}
-            onLogout={() => {
-              setToken(null);
-              setUser(null);
-              setToast({ open: true, message: 'Signed out.', type: 'info' });
-            }}
-          />
-
-          <HistoryPanel
-            items={historyItems}
-            onClear={() => {
-              setHistoryItems([]);
-              setToast({ open: true, message: 'Local history cleared.', type: 'info' });
-            }}
-          />
-
-          {user && (
             <section className="rounded-2xl border border-white/10 glass-strong p-4 shadow-sm">
               <h3 className="text-sm font-semibold text-zinc-200">Cloud Job History</h3>
               <p className="mt-1 text-xs text-zinc-400">{remoteJobs.length} recent jobs linked to your account.</p>
             </section>
-          )}
-        </aside>
+          </aside>
 
-        <div className="space-y-6 lg:col-span-4">
-          <AnimatePresence mode="wait">
-            {!file ? (
-              <motion.div
-                key="uploader"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-              >
-                <Uploader onFileSelect={handleFileSelect} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="controls"
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -12 }}
-              >
-                <Controls
-                  settings={settings}
-                  onSettingsChange={setSettings}
-                  onProcess={handleProcess}
-                  onCancel={cancelProcessing}
-                  isProcessing={isProcessing}
-                  onReset={handleReset}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+          <div className="space-y-6 lg:col-span-4">
+            <AnimatePresence mode="wait">
+              {!file ? (
+                <motion.div
+                  key="uploader"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                >
+                  <Uploader onFileSelect={handleFileSelect} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="controls"
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -12 }}
+                >
+                  <Controls
+                    settings={settings}
+                    onSettingsChange={setSettings}
+                    onProcess={handleProcess}
+                    onCancel={cancelProcessing}
+                    isProcessing={isProcessing}
+                    onReset={handleReset}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-        <div className="space-y-4 lg:col-span-5">
-          <Preview original={preview} processed={result} isProcessing={isProcessing} />
-          {isProcessing ? <Progress progress={progress} /> : null}
-        </div>
-      </section>
+          <div className="space-y-4 lg:col-span-5">
+            <Preview original={preview} processed={result} isProcessing={isProcessing} />
+            {isProcessing ? <Progress progress={progress} /> : null}
+          </div>
+        </section>
+      )}
 
       <Toast
         open={toast.open}
