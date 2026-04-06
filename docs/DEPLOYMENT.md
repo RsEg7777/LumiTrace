@@ -77,9 +77,12 @@ sh -c "alembic -c alembic.ini upgrade head && python -m app.worker_service"
 Set Vercel environment variable:
 
 ```bash
+API_URL=https://<your-backend-host> # used by Next.js server route handlers on Vercel
 NEXT_PUBLIC_API_URL=https://<your-backend-host>
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google-oauth-client-id>
 ```
+
+Important: `NEXT_PUBLIC_API_URL` is bundled for browser code, but the `/api/*` proxy route handlers run server-side on Vercel and should use `API_URL`. If `API_URL` is missing, the proxy falls back to `http://localhost:8000`, which is unreachable in Vercel runtime and results in `502 Backend service is unavailable`.
 
 Push to `main` and let Vercel build/deploy.
 

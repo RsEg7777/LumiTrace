@@ -10,12 +10,15 @@ interface ProxyRequestOptions {
   includeQuery?: boolean;
 }
 
+function getConfiguredBackendBase(): string {
+  return process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+}
+
 function normalizeBaseUrl(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
-function getBackendBaseUrls(): string[] {
-  const configuredBase = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+function getBackendBaseUrls(configuredBase: string): string[] {
   const normalizedBase = normalizeBaseUrl(configuredBase);
   const candidates = [normalizedBase];
 
@@ -33,6 +36,19 @@ function getBackendBaseUrls(): string[] {
   }
 
   return Array.from(new Set(candidates));
+}
+
+function isLocalhostBackend(baseUrl: string): boolean {
+  try {
+    const parsed = new URL(baseUrl);
+    return ['localhost', '127.0.0.1', '::1'].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isLikelyVercelRuntime(): boolean {
+  return Boolean(process.env.VERCEL);
 }
 
 function buildBackendUrl(
@@ -95,12 +111,23 @@ export async function proxyRequest({
   bodyMode = 'none',
   includeQuery = true,
 }: ProxyRequestOptions): Promise<NextResponse> {
-  const baseUrls = getBackendBaseUrls();
+  const configuredBase = getConfiguredBackendBase();
+  const baseUrls = getBackendBaseUrls(configuredBase);
   const requestMethod = method || (request.method as ProxyRequestOptions['method']) || 'GET';
   const requestBody = await getForwardBody(request, bodyMode);
   const networkErrors: string[] = [];
   const headers = new Headers();
   const authHeader = request.headers.get('authorization');
+
+  if (isLikelyVercelRuntime() && baseUrls.every(isLocalhostBackend)) {
+    return NextResponse.json(
+      {
+        error: 'Backend service is unavailable. API_URL is configured to localhost in Vercel runtime.',
+        hint: 'Set API_URL (and optionally NEXT_PUBLIC_API_URL) in Vercel to a public backend URL such as https://api.example.com, then redeploy.',
+      },
+      { status: 502 },
+    );
+  }
 
   if (authHeader) {
     headers.set('authorization', authHeader);
@@ -143,6 +170,7 @@ export async function proxyRequest({
   return NextResponse.json(
     {
       error: 'Backend service is unavailable. Check NEXT_PUBLIC_API_URL/API_URL and backend runtime.',
+      configured_base: process.env.NODE_ENV === 'production' ? undefined : configuredBase,
       details: process.env.NODE_ENV === 'production' ? undefined : networkErrors,
     },
     { status: 502 },
