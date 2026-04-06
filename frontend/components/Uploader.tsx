@@ -50,7 +50,7 @@ export default function Uploader({ onFileSelect }: UploaderProps) {
           className="flex flex-col items-center gap-4"
         >
           <div className="w-20 h-20 rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center">
-            <Upload className="w-10 h-10 text-zinc-300" />
+            <Upload className="w-10 h-10 text-teal-300" />
           </div>
           
           <div>
@@ -63,11 +63,11 @@ export default function Uploader({ onFileSelect }: UploaderProps) {
           </div>
 
           <div className="flex gap-4 mt-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 text-xs text-zinc-300 border border-white/10">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 text-xs text-teal-300 border border-white/10">
               <ImageIcon className="w-4 h-4 text-zinc-400" />
               <span>Images</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 text-xs text-zinc-300 border border-white/10">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 text-xs text-teal-300 border border-white/10">
               <Film className="w-4 h-4 text-zinc-400" />
               <span>Videos</span>
             </div>

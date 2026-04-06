@@ -3,16 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --background: #000000;
-  --foreground: #fafafa;
-  --surface: rgba(24, 24, 27, 0.4);
-  --surface-strong: rgba(24, 24, 27, 0.8);
-  --line: rgba(255, 255, 255, 0.06);
-  --line-strong: rgba(255, 255, 255, 0.12);
+  --background: #030014;
+  --foreground: #f8fafc;
+  --surface: rgba(15, 15, 25, 0.4);
+  --surface-strong: rgba(20, 20, 35, 0.65);
+  --line: rgba(139, 92, 246, 0.15);
+  --line-strong: rgba(139, 92, 246, 0.35);
   
-  --primary: #27272a;
-  --secondary: #18181b;
-  --glow-soft: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --glow-soft: 0 8px 30px rgba(139, 92, 246, 0.2);
 }
 
 * {
@@ -37,13 +35,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Deep, dark minimal background */
 body::before {
   content: '';
   position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 50vh;
-  background: radial-gradient(ellipse at 50% -20%, rgba(39, 39, 42, 0.3), rgba(0, 0, 0, 0) 60%);
+  top: -20vh; left: -10vw; right: -10vw;
+  height: 70vh;
+  background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.25), rgba(236, 72, 153, 0.15), transparent 70%);
   pointer-events: none;
   z-index: -1;
 }
@@ -57,7 +54,6 @@ code, pre, kbd {
   font-family: var(--font-mono), monospace;
 }
 
-/* Elegant scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -66,25 +62,25 @@ code, pre, kbd {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(139, 92, 246, 0.3);
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(139, 92, 246, 0.6);
 }
 
 .glass {
   background: var(--surface);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
   border: 1px solid var(--line);
 }
 
 .glass-strong {
   background: var(--surface-strong);
-  backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(200%);
   border: 1px solid var(--line-strong);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .glow {
@@ -92,18 +88,26 @@ code, pre, kbd {
 }
 
 .text-glow {
-  text-shadow: 0 0 1px rgba(255,255,255,0.1);
+  text-shadow: 0 0 16px rgba(139, 92, 246, 0.5);
 }
 
 .hero-title {
-  background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+  background: linear-gradient(to right, #2DD4BF, #3B82F6, #8B5CF6, #F43F5E, #2DD4BF);
+  background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+  animation: shine 6s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
 }
 
 .hero-title-accent {
-  background: linear-gradient(120deg, #71717a 0%, #d4d4d8 100%);
+  background: linear-gradient(120deg, #F43F5E 0%, #F97316 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -111,52 +115,56 @@ code, pre, kbd {
 
 .chip {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(139, 92, 246, 0.05);
   backdrop-filter: blur(8px);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .chip:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
 }
 
 .btn-primary {
-  background: #fafafa;
-  color: #09090b;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #ffffff;
   border-radius: 8px;
   transition: all 0.2s ease;
   font-weight: 500;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 .btn-primary:hover {
-  background: #e4e4e7;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
   transform: translateY(-1px);
+  filter: brightness(1.1);
 }
 
 .btn-glow {
-  background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
+  background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
   color: #ffffff;
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  transition: all 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.3);
+  transition: all 0.3s ease;
 }
 .btn-glow:hover {
-  border: 1px solid rgba(255,255,255,0.25);
-  transform: translateY(-1px);
-  background: linear-gradient(135deg, #3f3f46 0%, #27272a 100%);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.4);
 }
 
 .input-glass {
   border: 1px solid var(--line);
-  background: rgba(24, 24, 27, 0.5);
-  color: #fafafa;
+  background: rgba(15, 15, 25, 0.6);
+  color: #f8fafc;
   border-radius: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
 }
 .input-glass:focus {
-  border-color: #52525b;
-  box-shadow: 0 0 0 2px rgba(82, 82, 91, 0.15);
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2), inset 0 0 10px rgba(139, 92, 246, 0.1);
   outline: none;
 }
 

@@ -25,7 +25,7 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
         <div className="w-24 h-24 rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center mb-6">
           <ImageIcon className="w-12 h-12 text-zinc-400" />
         </div>
-        <h3 className="text-xl font-semibold text-zinc-300 mb-2">No Preview Available</h3>
+        <h3 className="text-xl font-semibold text-teal-300 mb-2">No Preview Available</h3>
         <p className="text-zinc-400">Upload an image or video to get started</p>
       </motion.div>
     );

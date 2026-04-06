@@ -242,7 +242,7 @@ export default function Home() {
       <header className="sticky top-0 z-40 border-b border-white/5 bg-zinc-950/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-800 shadow-sm border border-white/10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(99,102,241,0.4)] border border-indigo-400/50">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -255,7 +255,7 @@ export default function Home() {
             href="https://github.com/RsEg7777/LumiTrace"
             target="_blank"
             rel="noopener noreferrer"
-            className="chip inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition-all hover:text-zinc-50 hover:bg-white/5"
+            className="chip inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-300 transition-all hover:text-zinc-50 hover:bg-white/5"
           >
             <Github className="h-4 w-4" />
             GitHub
@@ -269,8 +269,8 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="glass-strong relative overflow-hidden rounded-[2rem] px-6 py-12 sm:px-12"
         >
-          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-zinc-700/20 blur-[100px]" />
-          <div className="absolute -bottom-20 left-6 h-72 w-72 rounded-full bg-zinc-800/20 blur-[100px]" />
+          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-teal-500/20 blur-[100px]" />
+          <div className="absolute -bottom-20 left-6 h-72 w-72 rounded-full bg-rose-500/20 blur-[100px]" />
 
           <div className="relative">
             <h1 className="hero-title font-heading text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-7xl">
@@ -295,9 +295,9 @@ export default function Home() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="chip inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-300"
+                  className="chip inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-teal-300"
                 >
-                  <feature.icon className="h-3.5 w-3.5 text-zinc-300" />
+                  <feature.icon className="h-3.5 w-3.5 text-teal-300" />
                   {feature.text}
                 </motion.div>
               ))}

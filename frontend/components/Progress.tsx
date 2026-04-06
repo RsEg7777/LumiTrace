@@ -12,7 +12,7 @@ export default function Progress({ progress }: ProgressProps) {
     if (p < 20) return { label: 'Queued and uploading', color: 'bg-sky-500' };
     if (p < 40) return { label: 'Estimating depth', color: 'bg-cyan-500' };
     if (p < 70) return { label: 'Tracing light paths', color: 'bg-teal-500' };
-    if (p < 90) return { label: 'Denoising output', color: 'bg-zinc-800 border border-zinc-600 shadow-sm' };
+    if (p < 90) return { label: 'Denoising output', color: 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]' };
     return { label: 'Finalizing render', color: 'bg-emerald-500' };
   };
 
@@ -30,7 +30,7 @@ export default function Progress({ progress }: ProgressProps) {
           {isComplete ? (
             <CheckCircle2 className="w-5 h-5 text-zinc-400" />
           ) : (
-            <Clock className="w-5 h-5 text-zinc-300" />
+            <Clock className="w-5 h-5 text-teal-300" />
           )}
           <span className="font-medium text-zinc-50">{isComplete ? 'Complete!' : stage.label}</span>
         </div>

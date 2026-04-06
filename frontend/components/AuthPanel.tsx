@@ -132,7 +132,7 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
           <ShieldCheck className="h-5 w-5 text-zinc-400" />
           <h3 className="text-sm font-semibold">Authenticated</h3>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-zinc-300">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-teal-300">
           <p className="flex items-center gap-2 font-medium">
             <UserCircle2 className="h-4 w-4" />
             {user.display_name || user.email}
@@ -141,7 +141,7 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
         </div>
         <button
           onClick={onLogout}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-transparent px-3 py-2 text-sm text-zinc-300 hover:bg-white/5"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-transparent px-3 py-2 text-sm text-teal-300 hover:bg-white/5"
         >
           <LogOut className="h-4 w-4" />
           Sign out

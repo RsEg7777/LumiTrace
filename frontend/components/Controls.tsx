@@ -39,7 +39,7 @@ export default function Controls({
       className="rounded-2xl border border-white/10 glass-strong p-6 shadow-sm space-y-6"
     >
       <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-        <Settings2 className="w-5 h-5 text-zinc-300" />
+        <Settings2 className="w-5 h-5 text-teal-300" />
         <div>
           <h3 className="font-semibold text-zinc-50">Render Settings</h3>
           <p className="text-xs text-zinc-400">Estimated time ~{estimatedSeconds}s</p>
@@ -59,7 +59,7 @@ export default function Controls({
               'flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all',
               !settings.useNeural
                 ? 'btn-glow text-white'
-                : 'border border-white/10 bg-transparent text-zinc-300 hover:bg-white/5'
+                : 'border border-white/10 bg-transparent text-teal-300 hover:bg-white/5'
             )}
           >
             <Sparkles className="w-4 h-4" />
@@ -71,8 +71,8 @@ export default function Controls({
             className={cn(
               'flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all',
               settings.useNeural
-                ? 'bg-zinc-800 border border-zinc-600 shadow-sm text-white'
-                : 'border border-white/10 bg-transparent text-zinc-300 hover:bg-white/5'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_0_15px_rgba(245,158,11,0.3)] text-white'
+                : 'border border-white/10 bg-transparent text-teal-300 hover:bg-white/5'
             )}
           >
             <Cpu className="w-4 h-4" />
@@ -154,7 +154,7 @@ export default function Controls({
             type="checkbox"
             checked={settings.useDenoising}
             onChange={(e) => updateSetting('useDenoising', e.target.checked)}
-            className="w-5 h-5 rounded border-white/10 text-zinc-300 focus:ring-cyan-600 bg-transparent"
+            className="w-5 h-5 rounded border-white/10 text-teal-300 focus:ring-cyan-600 bg-transparent"
           />
         </label>
       </div>

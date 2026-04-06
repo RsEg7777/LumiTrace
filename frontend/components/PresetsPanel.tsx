@@ -59,7 +59,7 @@ const PRESETS: Array<{ name: string; description: string; settings: RenderSettin
 export default function PresetsPanel({ onApplyPreset }: PresetsPanelProps) {
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-zinc-300">Quality Presets</p>
+      <p className="text-sm font-semibold text-teal-300">Quality Presets</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {PRESETS.map((preset, index) => (
           <motion.button
