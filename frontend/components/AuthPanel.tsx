@@ -127,21 +127,21 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
 
   if (user) {
     return (
-      <section className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
-        <div className="mb-3 flex items-center gap-2 text-slate-800">
-          <ShieldCheck className="h-5 w-5 text-emerald-600" />
+      <section className="rounded-2xl border border-white/10 glass-strong p-4 shadow-sm">
+        <div className="mb-3 flex items-center gap-2 text-zinc-200">
+          <ShieldCheck className="h-5 w-5 text-zinc-400" />
           <h3 className="text-sm font-semibold">Authenticated</h3>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-zinc-300">
           <p className="flex items-center gap-2 font-medium">
             <UserCircle2 className="h-4 w-4" />
             {user.display_name || user.email}
           </p>
-          <p className="mt-1 text-xs text-slate-500">{user.email}</p>
+          <p className="mt-1 text-xs text-zinc-400">{user.email}</p>
         </div>
         <button
           onClick={onLogout}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-transparent px-3 py-2 text-sm text-zinc-300 hover:bg-white/5"
         >
           <LogOut className="h-4 w-4" />
           Sign out
@@ -151,20 +151,20 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
+    <section className="rounded-2xl border border-white/10 glass-strong p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-        <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-xs">
+        <h3 className="text-sm font-semibold text-zinc-200">{title}</h3>
+        <div className="inline-flex rounded-lg border border-white/10 p-0.5 text-xs">
           <button
             onClick={() => setMode('login')}
-            className={`rounded-md px-2 py-1 ${mode === 'login' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+            className={`rounded-md px-2 py-1 ${mode === 'login' ? 'bg-slate-900 text-white' : 'text-zinc-400'}`}
             type="button"
           >
             Login
           </button>
           <button
             onClick={() => setMode('register')}
-            className={`rounded-md px-2 py-1 ${mode === 'register' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+            className={`rounded-md px-2 py-1 ${mode === 'register' ? 'bg-slate-900 text-white' : 'text-zinc-400'}`}
             type="button"
           >
             Register
@@ -179,7 +179,7 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
             placeholder="Display name"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
+            className="w-full rounded-lg border border-white/10 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
           />
         )}
         <input
@@ -188,7 +188,7 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Email"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
+          className="w-full rounded-lg border border-white/10 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
         />
         <input
           required
@@ -197,7 +197,7 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Password"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
+          className="w-full rounded-lg border border-white/10 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
         />
         {error && <p className="text-xs text-rose-600">{error}</p>}
 
@@ -212,11 +212,11 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
 
         {googleClientId ? (
           <div className="space-y-1.5 pt-2">
-            <div className="relative text-center text-[11px] text-slate-500">
-              <span className="bg-white px-2">or continue with Google</span>
+            <div className="relative text-center text-[11px] text-zinc-400">
+              <span className="bg-transparent px-2">or continue with Google</span>
             </div>
             <div className="flex justify-center" ref={googleButtonRef} />
-            {!googleReady ? <p className="text-[11px] text-slate-500 text-center">Loading Google sign-in…</p> : null}
+            {!googleReady ? <p className="text-[11px] text-zinc-400 text-center">Loading Google sign-in…</p> : null}
           </div>
         ) : null}
       </form>

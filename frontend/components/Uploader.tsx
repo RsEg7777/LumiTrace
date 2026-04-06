@@ -33,7 +33,7 @@ export default function Uploader({ onFileSelect }: UploaderProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-slate-200 bg-white/95 p-8 shadow-sm"
+      className="rounded-2xl border border-white/10 glass-strong p-8 shadow-sm"
     >
       <div
         {...getRootProps()}
@@ -49,31 +49,31 @@ export default function Uploader({ onFileSelect }: UploaderProps) {
           animate={{ y: isDragActive ? -10 : 0 }}
           className="flex flex-col items-center gap-4"
         >
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-100 to-amber-100 flex items-center justify-center">
-            <Upload className="w-10 h-10 text-cyan-700" />
+          <div className="w-20 h-20 rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center">
+            <Upload className="w-10 h-10 text-zinc-300" />
           </div>
           
           <div>
-            <p className="text-lg font-semibold text-slate-900 mb-2">
+            <p className="text-lg font-semibold text-zinc-50 mb-2">
               {isDragActive ? 'Drop your file here' : 'Drag & drop your file'}
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-zinc-400">
               or click to browse from your computer
             </p>
           </div>
 
           <div className="flex gap-4 mt-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-xs text-slate-700 border border-slate-200">
-              <ImageIcon className="w-4 h-4 text-emerald-600" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 text-xs text-zinc-300 border border-white/10">
+              <ImageIcon className="w-4 h-4 text-zinc-400" />
               <span>Images</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-xs text-slate-700 border border-slate-200">
-              <Film className="w-4 h-4 text-sky-600" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 text-xs text-zinc-300 border border-white/10">
+              <Film className="w-4 h-4 text-zinc-400" />
               <span>Videos</span>
             </div>
           </div>
 
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="text-xs text-zinc-400 mt-2">
             Supports PNG, JPG, MP4, MOV up to {formatBytes(100 * 1024 * 1024)}
           </p>
         </motion.div>

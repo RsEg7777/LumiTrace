@@ -36,13 +36,13 @@ export default function Controls({
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="rounded-2xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-6"
+      className="rounded-2xl border border-white/10 glass-strong p-6 shadow-sm space-y-6"
     >
-      <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
-        <Settings2 className="w-5 h-5 text-cyan-600" />
+      <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+        <Settings2 className="w-5 h-5 text-zinc-300" />
         <div>
-          <h3 className="font-semibold text-slate-900">Render Settings</h3>
-          <p className="text-xs text-slate-500">Estimated time ~{estimatedSeconds}s</p>
+          <h3 className="font-semibold text-zinc-50">Render Settings</h3>
+          <p className="text-xs text-zinc-400">Estimated time ~{estimatedSeconds}s</p>
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export default function Controls({
 
       {/* Quality Mode Toggle */}
       <div className="space-y-3">
-        <label className="text-sm text-slate-600">Rendering Mode</label>
+        <label className="text-sm text-zinc-400">Rendering Mode</label>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => updateSetting('useNeural', false)}
@@ -58,8 +58,8 @@ export default function Controls({
             className={cn(
               'flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all',
               !settings.useNeural
-                ? 'bg-cyan-600 text-white'
-                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                ? 'btn-glow text-white'
+                : 'border border-white/10 bg-transparent text-zinc-300 hover:bg-white/5'
             )}
           >
             <Sparkles className="w-4 h-4" />
@@ -71,8 +71,8 @@ export default function Controls({
             className={cn(
               'flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all',
               settings.useNeural
-                ? 'bg-amber-500 text-white'
-                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                ? 'bg-zinc-800 border border-zinc-600 shadow-sm text-white'
+                : 'border border-white/10 bg-transparent text-zinc-300 hover:bg-white/5'
             )}
           >
             <Cpu className="w-4 h-4" />
@@ -90,8 +90,8 @@ export default function Controls({
           className="space-y-3"
         >
           <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Samples per Pixel</span>
-            <span className="font-medium text-slate-900">{settings.samples}</span>
+            <span className="text-zinc-400">Samples per Pixel</span>
+            <span className="font-medium text-zinc-50">{settings.samples}</span>
           </div>
           <input
             type="range"
@@ -103,7 +103,7 @@ export default function Controls({
             className="w-full"
             aria-label="Samples per pixel"
           />
-          <div className="flex justify-between text-xs text-slate-500">
+          <div className="flex justify-between text-xs text-zinc-400">
             <span>Fast (16)</span>
             <span>Quality (512)</span>
           </div>
@@ -113,8 +113,8 @@ export default function Controls({
       {/* Max Bounces */}
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-slate-600">Max Bounces</span>
-          <span className="font-medium text-slate-900">{settings.maxBounces}</span>
+          <span className="text-zinc-400">Max Bounces</span>
+          <span className="font-medium text-zinc-50">{settings.maxBounces}</span>
         </div>
         <input
           type="range"
@@ -131,8 +131,8 @@ export default function Controls({
       {/* Exposure */}
       <div className="space-y-3">
         <div className="flex justify-between text-sm">
-          <span className="text-slate-600">Exposure</span>
-          <span className="font-medium text-slate-900">{settings.exposure.toFixed(1)}</span>
+          <span className="text-zinc-400">Exposure</span>
+          <span className="font-medium text-zinc-50">{settings.exposure.toFixed(1)}</span>
         </div>
         <input
           type="range"
@@ -148,26 +148,26 @@ export default function Controls({
 
       {/* Toggles */}
       <div className="space-y-3">
-        <label className="flex items-center justify-between p-3 rounded-lg bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors border border-slate-200">
+        <label className="flex items-center justify-between p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-zinc-800/50 transition-colors border border-white/10">
           <span className="text-sm">AI Denoising</span>
           <input
             type="checkbox"
             checked={settings.useDenoising}
             onChange={(e) => updateSetting('useDenoising', e.target.checked)}
-            className="w-5 h-5 rounded border-slate-300 text-cyan-600 focus:ring-cyan-600 bg-transparent"
+            className="w-5 h-5 rounded border-white/10 text-zinc-300 focus:ring-cyan-600 bg-transparent"
           />
         </label>
       </div>
 
       {/* Action Buttons */}
-      <div className="space-y-3 pt-4 border-t border-slate-200">
+      <div className="space-y-3 pt-4 border-t border-white/10">
         <button
           onClick={onProcess}
           disabled={isProcessing}
           className={cn(
             'w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all',
             isProcessing
-              ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+              ? 'bg-slate-200 text-zinc-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700'
           )}
         >
@@ -197,7 +197,7 @@ export default function Controls({
         <button
           onClick={onReset}
           disabled={isProcessing}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50 transition-all"
         >
           <RotateCcw className="w-4 h-4" />
           <span>Reset</span>

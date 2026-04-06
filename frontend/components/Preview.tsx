@@ -20,13 +20,13 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="rounded-2xl border border-slate-200 bg-white/90 p-12 flex flex-col items-center justify-center min-h-[420px] text-center shadow-sm"
+        className="rounded-2xl border border-white/10 bg-transparent/90 p-12 flex flex-col items-center justify-center min-h-[420px] text-center shadow-sm"
       >
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-cyan-100 to-amber-100 flex items-center justify-center mb-6">
-          <ImageIcon className="w-12 h-12 text-slate-500" />
+        <div className="w-24 h-24 rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center mb-6">
+          <ImageIcon className="w-12 h-12 text-zinc-400" />
         </div>
-        <h3 className="text-xl font-semibold text-slate-700 mb-2">No Preview Available</h3>
-        <p className="text-slate-500">Upload an image or video to get started</p>
+        <h3 className="text-xl font-semibold text-zinc-300 mb-2">No Preview Available</h3>
+        <p className="text-zinc-400">Upload an image or video to get started</p>
       </motion.div>
     );
   }
@@ -35,16 +35,16 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="rounded-2xl overflow-hidden border border-slate-200 bg-white/95 shadow-sm"
+      className="rounded-2xl overflow-hidden border border-white/10 glass-strong shadow-sm"
     >
-      <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900">Preview</h3>
+      <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <h3 className="font-semibold text-zinc-50">Preview</h3>
         <div className="flex items-center gap-2">
           {processed && (
             <a
               href={processed}
               download
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-colors text-sm"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg btn-primary text-sm"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
@@ -52,7 +52,7 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
           )}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-zinc-800/50 transition-colors"
             aria-label="Toggle fullscreen preview"
           >
             <Maximize2 className="w-4 h-4" />
