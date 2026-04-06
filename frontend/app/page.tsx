@@ -238,16 +238,16 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen pb-16 text-foreground">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-dark-900/60 backdrop-blur-xl">
+    <main className="min-h-screen pb-16">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="glow flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 via-blue-500 to-fuchsia-500 shadow-sm animate-pulse-slow">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 shadow-sm">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-heading text-lg font-bold tracking-tight text-cyan-50 text-glow">LumiTrace Studio</p>
-              <p className="text-xs text-indigo-200/75">{processingSummary}</p>
+              <p className="text-lg font-bold tracking-tight text-slate-900">LumiTrace Studio</p>
+              <p className="text-xs text-slate-500">{processingSummary}</p>
             </div>
           </div>
 
@@ -255,7 +255,7 @@ export default function Home() {
             href="https://github.com/RsEg7777/LumiTrace"
             target="_blank"
             rel="noopener noreferrer"
-            className="glass inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-purple-100 transition hover:-translate-y-0.5 hover:border-cyan-400 hover:text-cyan-300"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
           >
             <Github className="h-4 w-4" />
             GitHub
@@ -267,17 +267,16 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-strong glow relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10"
+          className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white/90 px-6 py-10 shadow-sm sm:px-10"
         >
-          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl animate-float" />
-          <div className="absolute -bottom-20 left-6 h-72 w-72 rounded-full bg-fuchsia-500/20 blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute left-1/3 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-purple-500/20 blur-3xl animate-float" style={{ animationDelay: '4s' }} />
+          <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-cyan-200/50 blur-3xl" />
+          <div className="absolute -bottom-20 left-10 h-64 w-64 rounded-full bg-amber-200/40 blur-3xl" />
 
           <div className="relative">
-            <h1 className="hero-title font-heading text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-glow">
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
               Cinematic path tracing for images and videos
             </h1>
-            <p className="mt-4 max-w-3xl text-base text-indigo-100/80 sm:text-lg">
+            <p className="mt-4 max-w-3xl text-base text-slate-600 sm:text-lg">
               Build physically inspired lighting passes with account-backed job history, reusable presets,
               robust progress tracking, and resilient download flows.
             </p>
@@ -295,9 +294,9 @@ export default function Home() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.06 }}
-                  className="chip inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs transition-transform hover:scale-105"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700"
                 >
-                  <feature.icon className="h-3.5 w-3.5 text-cyan-400" />
+                  <feature.icon className="h-3.5 w-3.5 text-cyan-700" />
                   {feature.text}
                 </motion.div>
               ))}
@@ -331,9 +330,9 @@ export default function Home() {
           />
 
           {user && (
-            <section className="glass rounded-2xl p-4 transition-all hover:shadow-[0_0_20px_rgba(167,139,250,0.2)]">
-              <h3 className="font-heading text-sm font-semibold text-cyan-200">Cloud Job History</h3>
-              <p className="mt-1 text-xs text-indigo-200/75">{remoteJobs.length} recent jobs linked to your account.</p>
+            <section className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-slate-800">Cloud Job History</h3>
+              <p className="mt-1 text-xs text-slate-500">{remoteJobs.length} recent jobs linked to your account.</p>
             </section>
           )}
         </aside>

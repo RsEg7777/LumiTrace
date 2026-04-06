@@ -1,16 +1,10 @@
 import type { Metadata } from 'next';
-import { Sora, Plus_Jakarta_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { Space_Grotesk, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
-const sora = Sora({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-heading',
-  weight: ['500', '600', '700', '800'],
-});
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-body',
   weight: ['400', '500', '600', '700'],
 });
 
@@ -32,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${sora.variable} ${jakarta.variable} ${plexMono.variable}`}>{children}</body>
+      <body className={`${spaceGrotesk.variable} ${plexMono.variable}`}>{children}</body>
     </html>
   );
 }

@@ -36,61 +36,62 @@ export default function Controls({
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="glass-strong rounded-[2rem] p-8 shadow-2xl space-y-6 relative overflow-hidden"
+      className="rounded-2xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-6"
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-400/10 blur-[50px] rounded-full pointer-events-none"></div>
-      
-      <div className="flex items-center gap-3 border-b border-purple-500/20 pb-4">
-        <Settings2 className="h-5 w-5 text-cyan-400 animate-pulse-slow" />
+      <div className="flex items-center gap-3 pb-4 border-b border-slate-200">
+        <Settings2 className="w-5 h-5 text-cyan-600" />
         <div>
-          <h3 className="font-heading font-semibold text-cyan-50 text-glow">Render Settings</h3>
-          <p className="text-xs text-purple-200">Estimated time ~{estimatedSeconds}s</p>
+          <h3 className="font-semibold text-slate-900">Render Settings</h3>
+          <p className="text-xs text-slate-500">Estimated time ~{estimatedSeconds}s</p>
         </div>
       </div>
 
       <PresetsPanel onApplyPreset={onSettingsChange} />
 
-      <div className="space-y-4">
-        <label className="text-sm font-medium text-pink-200 tracking-wide uppercase">Rendering Mode</label>
-        <div className="grid grid-cols-2 gap-3">
+      {/* Quality Mode Toggle */}
+      <div className="space-y-3">
+        <label className="text-sm text-slate-600">Rendering Mode</label>
+        <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => updateSetting('useNeural', false)}
+            aria-label="Switch to path tracing mode"
             className={cn(
-              'flex flex-col items-center justify-center gap-3 p-4 rounded-xl transition-all duration-300',
+              'flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all',
               !settings.useNeural
-                ? 'btn-glow border-cyan-400 bg-cyan-500/20 shadow-[0_0_20px_rgba(34,211,238,0.4)]'
-                : 'glass border-white/5 hover:border-pink-400/50 hover:bg-white/5'
+                ? 'bg-cyan-600 text-white'
+                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
             )}
           >
-            <Sparkles className={cn("w-5 h-5", !settings.useNeural ? "text-white" : "text-cyan-400")} />
-            <span className={cn("text-xs font-semibold", !settings.useNeural ? "text-white" : "text-cyan-200")}>Path Tracing</span>
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-medium">Path Tracing</span>
           </button>
-          
           <button
             onClick={() => updateSetting('useNeural', true)}
+            aria-label="Switch to neural fast mode"
             className={cn(
-              'flex flex-col items-center justify-center gap-3 p-4 rounded-xl transition-all duration-300',
+              'flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all',
               settings.useNeural
-                ? 'bg-gradient-to-br from-fuchsia-500 to-purple-600 border border-fuchsia-400 shadow-[0_0_20px_rgba(217,70,239,0.5)]'
-                : 'glass border-white/5 hover:border-cyan-400/50 hover:bg-white/5'
+                ? 'bg-amber-500 text-white'
+                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
             )}
           >
-            <Cpu className={cn("w-5 h-5", settings.useNeural ? "text-white" : "text-fuchsia-400")} />
-            <span className={cn("text-xs font-semibold", settings.useNeural ? "text-white" : "text-fuchsia-200")}>Neural Fast</span>
+            <Cpu className="w-4 h-4" />
+            <span className="text-sm font-medium">Neural (Fast)</span>
           </button>
         </div>
       </div>
 
+      {/* Samples Slider */}
       {!settings.useNeural && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="space-y-4"
+          className="space-y-3"
         >
-          <div className="flex justify-between items-center bg-dark-800/50 rounded-lg p-3 border border-white/5">
-            <span className="text-sm font-medium text-cyan-100">Samples</span>
-            <span className="font-mono text-cyan-400 font-bold bg-cyan-400/10 px-3 py-1 rounded text-glow">{settings.samples}</span>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600">Samples per Pixel</span>
+            <span className="font-medium text-slate-900">{settings.samples}</span>
           </div>
           <input
             type="range"
@@ -99,78 +100,86 @@ export default function Controls({
             step="16"
             value={settings.samples}
             onChange={(e) => updateSetting('samples', parseInt(e.target.value))}
-            className="w-full accent-cyan-400 cursor-pointer"
+            className="w-full"
+            aria-label="Samples per pixel"
           />
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>Fast (16)</span>
+            <span>Quality (512)</span>
+          </div>
         </motion.div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-3 bg-dark-800/30 rounded-xl p-4 border border-white/5">
-          <div className="flex justify-between text-xs font-semibold text-purple-200">
-            <span>Bounces</span>
-            <span className="text-purple-400">{settings.maxBounces}</span>
-          </div>
-          <input
-            type="range"
-            min="1"
-            max="16"
-            step="1"
-            value={settings.maxBounces}
-            onChange={(e) => updateSetting('maxBounces', parseInt(e.target.value))}
-            className="w-full accent-purple-400 cursor-pointer"
-          />
+      {/* Max Bounces */}
+      <div className="space-y-3">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-600">Max Bounces</span>
+          <span className="font-medium text-slate-900">{settings.maxBounces}</span>
         </div>
-        
-        <div className="space-y-3 bg-dark-800/30 rounded-xl p-4 border border-white/5">
-          <div className="flex justify-between text-xs font-semibold text-pink-200">
-            <span>Exposure</span>
-            <span className="text-pink-400">{settings.exposure.toFixed(1)}</span>
-          </div>
-          <input
-            type="range"
-            min="0.1"
-            max="3.0"
-            step="0.1"
-            value={settings.exposure}
-            onChange={(e) => updateSetting('exposure', parseFloat(e.target.value))}
-            className="w-full accent-pink-400 cursor-pointer"
-          />
-        </div>
+        <input
+          type="range"
+          min="1"
+          max="16"
+          step="1"
+          value={settings.maxBounces}
+          onChange={(e) => updateSetting('maxBounces', parseInt(e.target.value))}
+          className="w-full"
+          aria-label="Maximum light bounces"
+        />
       </div>
 
-      <label className="glass flex cursor-pointer items-center justify-between rounded-xl border border-white/10 p-4 transition-all hover:border-cyan-400/50 hover:bg-white/5 group">
-        <span className="text-sm font-semibold text-cyan-50 group-hover:text-cyan-200 transition-colors">AI Denoising</span>
-        <div className={cn(
-          "w-12 h-6 rounded-full p-1 transition-colors duration-300 relative",
-          settings.useDenoising ? "bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]" : "bg-dark-700"
-        )}>
-          <div className={cn(
-            "w-4 h-4 bg-white rounded-full transition-transform duration-300",
-            settings.useDenoising ? "translate-x-6" : "translate-x-0"
-          )} />
+      {/* Exposure */}
+      <div className="space-y-3">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-600">Exposure</span>
+          <span className="font-medium text-slate-900">{settings.exposure.toFixed(1)}</span>
         </div>
-      </label>
+        <input
+          type="range"
+          min="0.1"
+          max="3.0"
+          step="0.1"
+          value={settings.exposure}
+          onChange={(e) => updateSetting('exposure', parseFloat(e.target.value))}
+          className="w-full"
+          aria-label="Exposure"
+        />
+      </div>
 
-      <div className="space-y-3 pt-4 border-t border-purple-500/20">
+      {/* Toggles */}
+      <div className="space-y-3">
+        <label className="flex items-center justify-between p-3 rounded-lg bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors border border-slate-200">
+          <span className="text-sm">AI Denoising</span>
+          <input
+            type="checkbox"
+            checked={settings.useDenoising}
+            onChange={(e) => updateSetting('useDenoising', e.target.checked)}
+            className="w-5 h-5 rounded border-slate-300 text-cyan-600 focus:ring-cyan-600 bg-transparent"
+          />
+        </label>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="space-y-3 pt-4 border-t border-slate-200">
         <button
           onClick={onProcess}
           disabled={isProcessing}
           className={cn(
-            'w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold tracking-wide uppercase transition-all duration-300',
+            'w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold transition-all',
             isProcessing
-              ? 'cursor-not-allowed bg-dark-700 text-gray-500 border border-gray-600'
-              : 'btn-glow'
+              ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700'
           )}
         >
           {isProcessing ? (
             <>
-              <div className="w-5 h-5 border-2 border-gray-500 border-t-cyan-400 rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-slate-400 border-t-slate-700 rounded-full processing-ring" />
               <span>Processing...</span>
             </>
           ) : (
             <>
               <Play className="w-5 h-5" />
-              <span>Render</span>
+              <span>Start Rendering</span>
             </>
           )}
         </button>
@@ -178,7 +187,7 @@ export default function Controls({
         {isProcessing && onCancel && (
           <button
             onClick={onCancel}
-            className="w-full flex items-center justify-center gap-2 rounded-xl border border-pink-500/50 bg-pink-500/10 px-6 py-3 font-semibold text-pink-300 transition-all hover:bg-pink-500/20 hover:shadow-[0_0_15px_rgba(244,114,182,0.3)]"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all"
           >
             <Square className="w-4 h-4" />
             <span>Cancel</span>
@@ -188,7 +197,7 @@ export default function Controls({
         <button
           onClick={onReset}
           disabled={isProcessing}
-          className="w-full glass flex items-center justify-center gap-2 rounded-xl border border-white/5 px-6 py-3 font-semibold text-purple-300 transition-all hover:border-purple-400/50 hover:bg-purple-400/10 hover:text-cyan-50"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all"
         >
           <RotateCcw className="w-4 h-4" />
           <span>Reset</span>
