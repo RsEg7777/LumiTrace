@@ -10,16 +10,46 @@ interface ProxyRequestOptions {
   includeQuery?: boolean;
 }
 
-function getBackendBaseUrl(): string {
-  const configuredBase = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  return configuredBase.replace(/\/+$/, '');
+function normalizeBaseUrl(value: string): string {
+  return value.replace(/\/+$/, '');
 }
 
-function buildBackendUrl(backendPath: string, request: NextRequest, includeQuery: boolean): string {
+function getBackendBaseUrls(): string[] {
+  const configuredBase = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const normalizedBase = normalizeBaseUrl(configuredBase);
+  const candidates = [normalizedBase];
+
+  try {
+    const parsed = new URL(normalizedBase);
+    if (parsed.hostname === 'localhost') {
+      parsed.hostname = '127.0.0.1';
+      candidates.push(normalizeBaseUrl(parsed.toString()));
+    } else if (parsed.hostname === '127.0.0.1') {
+      parsed.hostname = 'localhost';
+      candidates.push(normalizeBaseUrl(parsed.toString()));
+    }
+  } catch {
+    // If URL parsing fails, keep the configured value as-is.
+  }
+
+  return Array.from(new Set(candidates));
+}
+
+function buildBackendUrl(
+  baseUrl: string,
+  backendPath: string,
+  request: NextRequest,
+  includeQuery: boolean,
+): string {
   const normalizedPath = backendPath.startsWith('/') ? backendPath : `/${backendPath}`;
-  const base = getBackendBaseUrl();
   const query = includeQuery ? request.nextUrl.search : '';
-  return `${base}${normalizedPath}${query}`;
+  return `${baseUrl}${normalizedPath}${query}`;
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 async function getForwardBody(request: NextRequest, bodyMode: ProxyBodyMode): Promise<BodyInit | undefined> {
@@ -65,8 +95,10 @@ export async function proxyRequest({
   bodyMode = 'none',
   includeQuery = true,
 }: ProxyRequestOptions): Promise<NextResponse> {
-  const targetUrl = buildBackendUrl(backendPath, request, includeQuery);
+  const baseUrls = getBackendBaseUrls();
   const requestMethod = method || (request.method as ProxyRequestOptions['method']) || 'GET';
+  const requestBody = await getForwardBody(request, bodyMode);
+  const networkErrors: string[] = [];
   const headers = new Headers();
   const authHeader = request.headers.get('authorization');
 
@@ -85,19 +117,34 @@ export async function proxyRequest({
     }
   }
 
-  try {
-    const upstream = await fetch(targetUrl, {
-      method: requestMethod,
-      headers,
-      body: await getForwardBody(request, bodyMode),
-      cache: 'no-store',
-    });
+  for (const baseUrl of baseUrls) {
+    const targetUrl = buildBackendUrl(baseUrl, backendPath, request, includeQuery);
 
-    return relayResponse(upstream);
-  } catch {
-    return NextResponse.json(
-      { error: 'Backend service is unavailable. Check NEXT_PUBLIC_API_URL/API_URL and backend runtime.' },
-      { status: 502 },
-    );
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const upstream = await fetch(targetUrl, {
+          method: requestMethod,
+          headers,
+          body: requestBody,
+          cache: 'no-store',
+        });
+
+        return relayResponse(upstream);
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : 'unknown network error';
+        networkErrors.push(`${targetUrl} -> ${detail}`);
+        if (attempt === 0) {
+          await sleep(120);
+        }
+      }
+    }
   }
+
+  return NextResponse.json(
+    {
+      error: 'Backend service is unavailable. Check NEXT_PUBLIC_API_URL/API_URL and backend runtime.',
+      details: process.env.NODE_ENV === 'production' ? undefined : networkErrors,
+    },
+    { status: 502 },
+  );
 }
