@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { Github, Sparkles } from 'lucide-react';
-import { User, AuthResponse } from '@/app/types';
+import { User } from '@/app/types';
 
 interface NavbarProps {
   user: User | null;
@@ -33,6 +34,20 @@ export default function Navbar({ user, processingSummary, onLogout }: NavbarProp
             <Github className="h-4 w-4" />
             GitHub
           </a>
+
+          <Link
+            href="/"
+            className="hidden sm:inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-300 transition-all hover:text-zinc-50 hover:bg-white/5"
+          >
+            Home
+          </Link>
+
+          <Link
+            href="/studio"
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-teal-300 transition-all hover:text-zinc-50 hover:bg-white/5"
+          >
+            Studio
+          </Link>
           
           {user ? (
             <div className="flex items-center gap-4 border-l border-white/10 pl-4">
@@ -48,7 +63,7 @@ export default function Navbar({ user, processingSummary, onLogout }: NavbarProp
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <a href="#login-section" className="text-sm font-medium text-zinc-300 hover:text-white">Sign In</a>
+              <Link href="/login" className="text-sm font-medium text-zinc-300 hover:text-white">Sign In</Link>
             </div>
           )}
         </nav>
