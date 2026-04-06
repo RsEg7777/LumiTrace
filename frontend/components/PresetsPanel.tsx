@@ -59,7 +59,7 @@ const PRESETS: Array<{ name: string; description: string; settings: RenderSettin
 export default function PresetsPanel({ onApplyPreset }: PresetsPanelProps) {
   return (
     <div className="space-y-3">
-      <p className="text-sm font-semibold text-slate-700">Quality Presets</p>
+      <p className="font-heading text-sm font-semibold text-cyan-50 text-glow">Quality Presets</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {PRESETS.map((preset, index) => (
           <motion.button
@@ -69,12 +69,12 @@ export default function PresetsPanel({ onApplyPreset }: PresetsPanelProps) {
             transition={{ delay: index * 0.05 }}
             onClick={() => onApplyPreset(preset.settings)}
             className={cn(
-              'rounded-xl border border-slate-200 bg-white p-3 text-left transition-all',
-              'hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-sm',
+              'glass rounded-xl border border-cyan-500/30 p-3 text-left transition-all',
+              'hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-[0_14px_30px_rgba(66,113,240,0.2)]',
             )}
           >
-            <p className="text-sm font-semibold text-slate-900">{preset.name}</p>
-            <p className="mt-1 text-xs text-slate-600">{preset.description}</p>
+            <p className="text-sm font-semibold text-cyan-50 text-glow">{preset.name}</p>
+            <p className="mt-1 text-xs text-purple-200/80">{preset.description}</p>
           </motion.button>
         ))}
       </div>

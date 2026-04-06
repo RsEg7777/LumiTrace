@@ -18,9 +18,9 @@ const iconByType = {
 };
 
 const classByType = {
-  success: 'border-emerald-300 bg-emerald-50 text-emerald-900',
-  error: 'border-rose-300 bg-rose-50 text-rose-900',
-  info: 'border-sky-300 bg-sky-50 text-sky-900',
+  success: 'border-cyan-300/60 bg-gradient-to-r from-cyan-200/75 via-blue-200/70 to-indigo-200/72 text-cyan-50 text-glow',
+  error: 'border-rose-500/50 bg-gradient-to-r from-rose-200/75 via-fuchsia-200/68 to-purple-200/72 text-rose-950',
+  info: 'border-purple-500/40/60 bg-gradient-to-r from-cyan-200/75 via-indigo-200/72 to-fuchsia-200/70 text-cyan-50 text-glow',
 };
 
 export default function Toast({
@@ -47,7 +47,7 @@ export default function Toast({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 16 }}
-          className={`fixed bottom-5 right-5 z-[70] max-w-sm rounded-xl border px-4 py-3 shadow-lg ${classByType[type]}`}
+          className={`fixed bottom-5 right-5 z-[70] max-w-sm rounded-xl border px-4 py-3 shadow-[0_16px_40px_rgba(67,95,216,0.3)] backdrop-blur ${classByType[type]}`}
           role="status"
           aria-live="polite"
         >

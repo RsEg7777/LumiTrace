@@ -20,13 +20,13 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="rounded-2xl border border-slate-200 bg-white/90 p-12 flex flex-col items-center justify-center min-h-[420px] text-center shadow-sm"
+        className="glass-strong flex min-h-[420px] flex-col items-center justify-center rounded-2xl p-12 text-center shadow-sm"
       >
-        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-cyan-100 to-amber-100 flex items-center justify-center mb-6">
-          <ImageIcon className="w-12 h-12 text-slate-500" />
+        <div className="glow mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300/70 via-blue-400/70 to-fuchsia-400/70">
+          <ImageIcon className="h-12 w-12 text-cyan-50 text-glow" />
         </div>
-        <h3 className="text-xl font-semibold text-slate-700 mb-2">No Preview Available</h3>
-        <p className="text-slate-500">Upload an image or video to get started</p>
+        <h3 className="font-heading mb-2 text-xl font-semibold text-cyan-50 text-glow">No Preview Available</h3>
+        <p className="text-purple-200/75">Upload an image or video to get started</p>
       </motion.div>
     );
   }
@@ -35,16 +35,16 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="rounded-2xl overflow-hidden border border-slate-200 bg-white/95 shadow-sm"
+      className="glass-strong glow overflow-hidden rounded-2xl shadow-sm"
     >
-      <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900">Preview</h3>
+      <div className="flex items-center justify-between border-b border-cyan-500/30 p-4">
+        <h3 className="font-heading font-semibold text-cyan-50 text-glow">Preview</h3>
         <div className="flex items-center gap-2">
           {processed && (
             <a
               href={processed}
               download
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-colors text-sm"
+              className="btn-glow flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
@@ -52,7 +52,7 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
           )}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="glass rounded-lg p-2 text-cyan-100 transition hover:border-purple-500/40"
             aria-label="Toggle fullscreen preview"
           >
             <Maximize2 className="w-4 h-4" />
@@ -60,7 +60,7 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
         </div>
       </div>
 
-      <div className={`relative bg-slate-900/90 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+      <div className={`relative bg-indigo-950/90 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
         <AnimatePresence mode="wait">
           {processed ? (
             <motion.div
@@ -90,10 +90,10 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
               />
               
               {/* Labels */}
-              <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-slate-900/70 text-xs font-medium text-white">
+              <div className="absolute left-4 top-4 rounded-full border border-white/35 bg-indigo-950/65 px-3 py-1 text-xs font-medium text-white backdrop-blur">
                 Original
               </div>
-              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-cyan-500/60 text-xs font-medium text-white">
+              <div className="absolute right-4 top-4 rounded-full border border-cyan-300/55 bg-gradient-to-r from-cyan-500/70 via-blue-500/65 to-fuchsia-500/70 px-3 py-1 text-xs font-medium text-white backdrop-blur">
                 Path Traced
               </div>
             </motion.div>
@@ -115,11 +115,11 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
               />
               
               {isProcessing && (
-                <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center bg-indigo-950/72 backdrop-blur-sm">
                   <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full processing-ring mx-auto mb-4" />
+                    <div className="processing-ring mx-auto mb-4 h-16 w-16 rounded-full border-4 border-fuchsia-300/35 border-t-cyan-300 shadow-[0_0_48px_rgba(74,222,255,0.45)]" />
                     <p className="text-lg font-medium text-white">Processing...</p>
-                    <p className="text-sm text-slate-300">This may take a few moments</p>
+                    <p className="text-sm text-indigo-100/80">This may take a few moments</p>
                   </div>
                 </div>
               )}
@@ -130,7 +130,7 @@ export default function Preview({ original, processed, isProcessing }: PreviewPr
         {isFullscreen && (
           <button
             onClick={() => setIsFullscreen(false)}
-            className="absolute top-4 right-4 p-2 rounded-lg bg-slate-900/70 text-white hover:bg-slate-900 transition-colors"
+            className="absolute right-4 top-4 rounded-lg border border-white/35 bg-indigo-950/70 p-2 text-white transition hover:bg-indigo-900"
             aria-label="Exit fullscreen preview"
           >
             <Maximize2 className="w-5 h-5" />

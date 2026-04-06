@@ -127,21 +127,21 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
 
   if (user) {
     return (
-      <section className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
-        <div className="mb-3 flex items-center gap-2 text-slate-800">
-          <ShieldCheck className="h-5 w-5 text-emerald-600" />
-          <h3 className="text-sm font-semibold">Authenticated</h3>
+      <section className="glass-strong rounded-2xl p-4 shadow-sm">
+        <div className="mb-3 flex items-center gap-2 text-cyan-50 text-glow">
+          <ShieldCheck className="h-5 w-5 text-cyan-700" />
+          <h3 className="font-heading text-sm font-semibold">Authenticated</h3>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+        <div className="glass rounded-xl border border-cyan-500/30 p-3 text-sm text-cyan-100">
           <p className="flex items-center gap-2 font-medium">
             <UserCircle2 className="h-4 w-4" />
             {user.display_name || user.email}
           </p>
-          <p className="mt-1 text-xs text-slate-500">{user.email}</p>
+          <p className="mt-1 text-xs text-pink-200/75">{user.email}</p>
         </div>
         <button
           onClick={onLogout}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          className="glass mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-500/30 px-3 py-2 text-sm font-medium text-cyan-100 hover:border-purple-500/40"
         >
           <LogOut className="h-4 w-4" />
           Sign out
@@ -151,20 +151,20 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm">
+    <section className="glass-strong rounded-2xl p-4 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-        <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-xs">
+        <h3 className="font-heading text-sm font-semibold text-cyan-50 text-glow">{title}</h3>
+        <div className="inline-flex rounded-lg border border-cyan-500/30 p-0.5 text-xs">
           <button
             onClick={() => setMode('login')}
-            className={`rounded-md px-2 py-1 ${mode === 'login' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+            className={`rounded-md px-2 py-1 ${mode === 'login' ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white shadow-[0_8px_18px_rgba(74,137,255,0.34)]' : 'text-pink-200/80'}`}
             type="button"
           >
             Login
           </button>
           <button
             onClick={() => setMode('register')}
-            className={`rounded-md px-2 py-1 ${mode === 'register' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+            className={`rounded-md px-2 py-1 ${mode === 'register' ? 'bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 text-white shadow-[0_8px_18px_rgba(124,77,255,0.35)]' : 'text-pink-200/80'}`}
             type="button"
           >
             Register
@@ -179,7 +179,7 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
             placeholder="Display name"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
+            className="input-glass w-full rounded-lg px-3 py-2 text-sm"
           />
         )}
         <input
@@ -188,7 +188,7 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Email"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
+          className="input-glass w-full rounded-lg px-3 py-2 text-sm"
         />
         <input
           required
@@ -197,14 +197,14 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Password"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none ring-cyan-300 focus:ring"
+          className="input-glass w-full rounded-lg px-3 py-2 text-sm"
         />
-        {error && <p className="text-xs text-rose-600">{error}</p>}
+        {error && <p className="text-xs text-rose-400">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-70"
+          className="btn-glow inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-white disabled:opacity-70"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {mode === 'register' ? 'Create account' : 'Sign in'}
@@ -212,11 +212,11 @@ export default function AuthPanel({ user, onAuth, onLogout }: AuthPanelProps) {
 
         {googleClientId ? (
           <div className="space-y-1.5 pt-2">
-            <div className="relative text-center text-[11px] text-slate-500">
-              <span className="bg-white px-2">or continue with Google</span>
+            <div className="relative text-center text-[11px] text-pink-200/75">
+              <span className="rounded-full bg-dark-900/70 px-2 py-0.5 backdrop-blur">or continue with Google</span>
             </div>
             <div className="flex justify-center" ref={googleButtonRef} />
-            {!googleReady ? <p className="text-[11px] text-slate-500 text-center">Loading Google sign-in…</p> : null}
+            {!googleReady ? <p className="text-center text-[11px] text-pink-200/75">Loading Google sign-in...</p> : null}
           </div>
         ) : null}
       </form>
